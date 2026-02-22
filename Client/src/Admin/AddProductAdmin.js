@@ -1,0 +1,161 @@
+import React, { useContext, useState } from 'react';
+import { axios } from '../Utils/Axios';
+import { PetContext } from '../Context/Context';
+import { useNavigate } from 'react-router-dom';
+import { Input, Radio, TextArea } from '../Components/Input';
+import Button from '../Components/Button';
+import toast from 'react-hot-toast';
+
+export default function AddProductAdmin() {
+  const navigate = useNavigate();
+  const { fetchProducts } = useContext(PetContext);
+
+  const [item, setItem] = useState({
+    title: '',
+    description: '',
+    price: '',
+    category: '',
+    image: '',
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setItem((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleForm = async (e) => {
+    e.preventDefault();
+
+    if (!item.image) {
+      return toast.error('Please enter image URL');
+    }
+
+    try {
+      const response = await axios.post('/api/admin/products', {
+        title: item.title,
+        price: item.price,
+        description: item.description,
+        category: item.category,
+        image: item.image, // 🔥 Direct URL
+      });
+
+      if (response.status === 201) {
+        toast.success(response.data.message);
+
+        await fetchProducts();
+        navigate('/dashboard/products');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to add product');
+    }
+  };
+
+  return (
+    <div className="d-flex justify-content-center">
+      <form
+        className="dashboard-table px-5"
+        style={{ width: '80%' }}
+        onSubmit={handleForm}
+      >
+        <h2 className="text-center">Add Product</h2>
+
+        <div className="d-flex justify-content-evenly">
+
+          {/* 🔥 Image Preview Section */}
+          <div className="pt-5" style={{ width: '300px' }}>
+            {item.image ? (
+              <div
+                style={{
+                  border: '1px solid gray',
+                  borderRadius: '10px',
+                  padding: '20px',
+                  textAlign: 'center',
+                }}
+              >
+                <img
+                  src={item.image}
+                  alt="Preview"
+                  className="w-75"
+                  style={{ maxHeight: '200px', objectFit: 'contain' }}
+                />
+              </div>
+            ) : (
+              <div
+                style={{
+                  border: '1px dashed black',
+                  borderRadius: '10px',
+                  height: '200px',
+                }}
+                className="d-flex justify-content-center align-items-center"
+              >
+                <p className="text-muted">Image Preview</p>
+              </div>
+            )}
+          </div>
+
+          {/* 🔥 Form Section */}
+          <div className="w-50 pt-4 ms-5">
+
+            <div className="mt-3 mb-3 text-center">
+              <label className="me-3 text-black">Category: </label>
+              {['Cat', 'Dog'].map((category) => (
+                <Radio
+                  key={category}
+                  label={category}
+                  value={category}
+                  name="category"
+                  onChange={handleInputChange}
+                />
+              ))}
+            </div>
+
+            <Input
+              type="text"
+              label="Title"
+              name="title"
+              value={item.title}
+              onChange={handleInputChange}
+            />
+
+            <TextArea
+              label="Description"
+              name="description"
+              value={item.description}
+              onChange={handleInputChange}
+            />
+
+            <Input
+              type="number"
+              label="Price"
+              name="price"
+              value={item.price}
+              min={1}
+              onChange={handleInputChange}
+            />
+
+            {/* 🔥 Image URL Input */}
+            <Input
+              type="text"
+              label="Image URL"
+              name="image"
+              value={item.image}
+              onChange={handleInputChange}
+              placeholder="Paste image URL here"
+            />
+
+            <div className="text-center">
+              <Button
+                type="submit"
+                className="mb-4 w-50"
+                color="black"
+              >
+                Submit
+              </Button>
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}
