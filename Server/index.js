@@ -7,9 +7,19 @@ const cookieParser = require('cookie-parser');
 const userRoutes = require('./Routes/userRoutes');
 const adminRoutes = require('./Routes/adminRoutes');
 
-// 🔥 FIXED CORS CONFIG
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://petfood-clientpf.onrender.com"
+];
+
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (!allowedOrigins.includes(origin)) {
+      return callback(new Error("CORS not allowed"), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 
