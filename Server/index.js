@@ -10,34 +10,18 @@ const adminRoutes = require("./Routes/adminRoutes");
 
 /*
 |--------------------------------------------------------------------------
-| ✅ ALLOWED ORIGINS
+| ✅ SIMPLE & SAFE CORS CONFIG (FIXED)
 |--------------------------------------------------------------------------
 */
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://client-kksj.onrender.com" // ✅ Your correct frontend URL
+  "https://client-kksj.onrender.com"
 ];
-
-/*
-|--------------------------------------------------------------------------
-| ✅ CORS CONFIGURATION
-|--------------------------------------------------------------------------
-*/
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or Postman)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        console.log("Blocked by CORS:", origin);
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true
   })
 );
@@ -68,8 +52,8 @@ app.use("/api/users", userRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log("Connected Successfully"))
-  .catch((err) => console.error("MongoDB Connection Error:", err));
+  .then(() => console.log("✅ MongoDB Connected Successfully"))
+  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
 /*
 |--------------------------------------------------------------------------
@@ -80,5 +64,6 @@ mongoose
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
+
