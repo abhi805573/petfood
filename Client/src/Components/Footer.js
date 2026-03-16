@@ -99,6 +99,7 @@ export default function Footer() {
           </MDBContainer>
           <div className="payment d-flex justify-content-between align-items-center flex-wrap pe-5 me-5 ps-5 ms-5 pb-4">
             <p className="text-muted">© 2026 Kitter. All rights reserved.</p>
+          
             <img
               src="https://res.cloudinary.com/dmzqckfj4/image/upload/v1706504631/home%20page/azb4970ad3erjqotwlvw.png"
               alt="Payment Methods"
