@@ -2,7 +2,7 @@ const { User, userRegisterSchema, userLoginSchema } = require("../Models/userSch
 const { Product } = require("../Models/productSchema");
 const Order = require("../Models/orderSchema");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs"); // ✅ FIX
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
@@ -12,6 +12,39 @@ const razorpay = new Razorpay({
 });
 
 module.exports = {
+
+  // ================= REGISTER =================
+  register: async (req, res) => {
+    try {
+      const { error, value } = userRegisterSchema.validate(req.body);
+      if (error)
+        return res.status(400).json({ message: error.details[0].message });
+
+      const { name, email, password } = value;
+
+      const userExists = await User.findOne({ email: email.toLowerCase() });
+      if (userExists)
+        return res.status(400).json({ message: "User already exists" });
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = await User.create({
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+      });
+
+      return res.status(201).json({
+        status: "success",
+        message: "User registered successfully",
+        data: newUser,
+      });
+
+    } catch (error) {
+      console.error("REGISTER ERROR:", error);
+      return res.status(500).json({ message: "Register failed" });
+    }
+  },
 
   // ================= PRODUCTS =================
 
@@ -190,15 +223,7 @@ module.exports = {
 
   payment: async (req, res) => {
     try {
-      console.log("Incoming payment body:", req.body);
-
       const { amount } = req.body;
-
-      if (!amount || isNaN(amount)) {
-        return res.status(400).json({
-          message: "Invalid amount received",
-        });
-      }
 
       const options = {
         amount: Number(amount) * 100,
@@ -215,10 +240,9 @@ module.exports = {
       });
 
     } catch (error) {
-      console.error("RAZORPAY ERROR:", error);
+      console.error(error);
       return res.status(500).json({
         message: "Failed to create Razorpay order",
-        error: error.message,
       });
     }
   },
@@ -267,7 +291,7 @@ module.exports = {
       });
 
     } catch (error) {
-      console.error("VERIFY ERROR:", error);
+      console.error(error);
       return res.status(500).json({
         message: "Payment verification failed",
       });
